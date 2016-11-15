@@ -1,9 +1,0 @@
-7 Day Average = 
-AVERAGEX (
-    FILTER (
-        ALL ( calendar[Date] ),
-        calendar[Date] > ( MAX ( Calendar[Date] ) - 7 )
-            && calendar[Date] <= MAX ( calendar[Date] )
-    ),
-    [Count Order Line]
-)

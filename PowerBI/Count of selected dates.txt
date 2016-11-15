@@ -1,1 +1,0 @@
-Count Dates Selected = calculate(DATEDIFF(min(calendar[Date]),max(calendar[Date]),day)+1)
