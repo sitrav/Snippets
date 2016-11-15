@@ -1,0 +1,63 @@
+Sub SaveOrconAtts()
+'30/1/10 Updated with date option in attach Fname - wip
+'29/1/10
+'http://www.your-save-time-and-improve-quality-technologies-online-resource.com/
+'save-attachments-from-outlook-using.html
+   Dim ns As NameSpace
+   Dim fld2SaveAtt As MAPIFolder
+   Dim MailItem As Object
+   Dim Att As Attachment
+   Dim APath As String, FileName As String
+   Dim sn As String
+   Dim sDate As Date 'Email sent
+   Dim aDate As String 'Attachment save date
+ 
+   Dim intFiles As Integer
+ 
+   On Error GoTo HandleError
+   APath = "C:\Attachments\"
+   Set ns = GetNamespace("MAPI")
+   Set fld2SaveAtt = ns.GetDefaultFolder(olFolderInbox).Folders("Hourly Report") 'Define Folder Here
+   intFiles = 0
+ 
+ 
+   If fld2SaveAtt.Items.Count = 0 Then
+       MsgBox "There were no messages found in your Inbox."
+       Exit Sub 'there are no messages, so Exit the Sub
+   End If
+   'Loop through Mail Items
+   For Each MailItem In fld2SaveAtt.Items
+        sn = MailItem.SenderName
+ 
+       'Loop through any attachments
+       For Each Att In MailItem.Attachments
+        If sn = "NissanReporting@dhl.com" Then
+            sDate = MailItem.ReceivedTime
+            aDate = Format(sDate, "yymmddhhmm") 'date format for file name
+            FileName = Trim(Att.FileName)
+            FileName = aDate & Att.FileName
+            Att.SaveAsFile APath & FileName
+            intFiles = intFiles + 1
+            Else
+        End If
+       Next
+   Next
+' Show summary message
+   If intFiles > 0 Then
+       MsgBox intFiles & " attachments were saved to " ^ _
+       "C:\Attachments."
+   Else
+       MsgBox "No attachments were found"
+   End If
+ 
+   Set Att = Nothing
+   Set MailItem = Nothing
+   Set ns = Nothing
+   Exit Sub
+HandleError:
+   MsgBox "Error: " & Err.Number & vbCrLf & _
+           "Description: " & Err.Description & vbCrLf & _
+           "The file's name is " & FileName
+           intFiles = intFiles - 1
+   Resume Next 'Continue saving attachments
+End Sub

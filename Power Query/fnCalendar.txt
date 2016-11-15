@@ -1,0 +1,69 @@
+let
+    Source = (optional startDate as nullable date, optional endDate as nullable date, optional CalendarType as nullable text, optional addDaysBeforeToday as nullable number, optional addDaysPastToday as nullable number) =>
+    //options for CalendarType = "Date" or "DateHour" or "Datetime"  //null dates default to today
+    //AddDays allow for dynamic range if you choose to base the calendar off of today (null values in startDate and endDate)
+let
+
+addDaysBefore = if addDaysBeforeToday = null then 0 else addDaysBeforeToday,
+startDateNotNull = if startDate = null then #date(Date.Year(DateTime.FixedLocalNow()),Date.Month(DateTime.FixedLocalNow()),Date.Day(DateTime.FixedLocalNow())) else startDate,
+firstDate = startDateNotNull - #duration(addDaysBefore,0,0,0),
+addDays = if addDaysPastToday = null then 0 else addDaysPastToday,
+
+endDateNotNull = if endDate = null then #date(Date.Year(DateTime.FixedLocalNow()),Date.Month(DateTime.FixedLocalNow()),Date.Day(DateTime.FixedLocalNow())) else endDate,
+lastDate = endDateNotNull + #duration(addDays,0,0,0),
+
+CalendarType = if CalendarType = null then "Date" else CalendarType,
+
+startYear = Date.Year(firstDate),
+startMonth = Date.Month(firstDate),
+startDay = Date.Day(firstDate),
+
+endYear = Date.Year(lastDate),
+endMonth = Date.Month(lastDate),
+endDay = Date.Day(lastDate),
+
+Modifier = if CalendarType = "Datetime" then 24*60 else if CalendarType = "DateHour" then 24 else 1,
+
+durDay = if CalendarType = "Date" then 1 else 0,
+durHour = if CalendarType = "DateHour" then 1 else 0,
+durMin =  if CalendarType = "Datetime" then 1 else 0,
+
+Source = List.DateTimes,
+#"Invoked FunctionSource" = Source(#datetime(startYear, startMonth, startDay,0,0,0), ((Duration.Days(#date(endYear,endMonth,endDay)-#date(startYear,startMonth,startDay)))+1)*Modifier, #duration(durDay, durHour, durMin, 0)),
+//#"Invoked FunctionSource" = Source(#datetime(2016, 09, 05,0,0,0), ((Duration.Days(DateTime.Date(DateTime.FixedLocalNow())-#date(2016,09,05)))+1)*24*60, #duration(0, 0, 1, 0)),	
+	#"Table from List" = Table.FromList(#"Invoked FunctionSource", Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    	#"Added Index" = Table.AddIndexColumn(#"Table from List", "Index", 1, 1),
+	#"Added Datetime" = Table.RenameColumns(#"Added Index",{{"Column1", "Datetime"}}),
+  	#"Datetime Type" = Table.TransformColumnTypes(#"Added Datetime",{{"Datetime", type datetime}}),
+ 	#"Added Date" = Table.AddColumn(#"Datetime Type", "Date", each DateTime.Date([Datetime]), type date),
+	#"Added Year" = Table.AddColumn(#"Added Date", "Year", each Date.Year([Date]), type number),
+	#"Added Month" = Table.AddColumn(#"Added Year", "Month Number", each Date.Month([Date]), type number),
+	#"Added Day" = Table.AddColumn(#"Added Month", "Day", each Date.Day([Date]), type number),
+ 	#"Added Hour" = Table.AddColumn(#"Added Day", "Hour", each if CalendarType = "Date" then null else Time.Hour([Datetime]), type number),
+	#"Day Text" = Table.AddColumn(#"Added Hour", "Day Name", each Date.ToText([Date],"ddd"), type text),
+	#"Month Text" = Table.AddColumn(#"Day Text", "Month Name", each Date.ToText([Date],"MMM"), type text),
+	#"Added Quarter" = Table.AddColumn(#"Month Text", "Quarter Number", each Date.QuarterOfYear([Date]), type number),
+	#"Duplicated Year" = Table.DuplicateColumn(#"Added Quarter", "Year", "Copy of Year"),
+	#"Changed Type" = Table.TransformColumnTypes(#"Duplicated Year",{{"Copy of Year", type text}}),
+	#"Split Year" = Table.SplitColumn(#"Changed Type","Copy of Year",Splitter.SplitTextByRepeatedLengths(2),{"Copy of Year.1", "Copy of Year.2"}),
+	#"Remove Split Year" = Table.RemoveColumns(#"Split Year",{"Copy of Year.1"}),
+	#"Added Short Year" = Table.RenameColumns(#"Remove Split Year",{{"Copy of Year.2", "Short Year"}}),
+   	#"Changed Type1" = Table.TransformColumnTypes(#"Added Short Year",{{"Short Year", Int64.Type}}),
+	#"Added Quarter Year" = Table.AddColumn(#"Changed Type1", "Quarter Year", each Number.ToText([Short Year]) & "Q" & Number.ToText([Quarter Number],"00")),
+	#"Added Formatted Month" = Table.AddColumn(#"Added Quarter Year", "Month", each Number.ToText([Month Number]) & " - " & [Month Name], type text),
+	#"Inserted Week of Year" = Table.AddColumn(#"Added Formatted Month", "Week", each Date.WeekOfYear([Datetime]), type number),
+	#"Inserted Time" = Table.AddColumn(#"Inserted Week of Year", "Time", each if CalendarType = "Date" then null else DateTime.Time([Datetime]), type time),
+	#"Added DateHour" = Table.AddColumn(#"Inserted Time", "DateHour", each if CalendarType="Date" then null else #datetime([Year],[Month Number],[Day],[Hour],0,0),type datetime),
+	#"Added Datetime_Flag" = Table.AddColumn(#"Added DateHour", "Datetime_Flag", each if CalendarType="Date" or CalendarType="DateHour" then null else if [Datetime] = #datetime(Date.Year(DateTime.LocalNow()) , Date.Month(DateTime.LocalNow()) , Date.Day(DateTime.LocalNow()) ,Time.Hour(DateTime.LocalNow()) ,Time.Minute(DateTime.LocalNow()) ,0) then true else false,type logical),
+	#"Added DateHour_Flag" = Table.AddColumn(#"Added Datetime_Flag", "DateHour_Flag", each if CalendarType="Date" then null else if [DateHour] = #datetime(Date.Year(DateTime.LocalNow()) , Date.Month(DateTime.LocalNow()) , Date.Day(DateTime.LocalNow()) ,Time.Hour(DateTime.LocalNow()) ,0 ,0) then true else false,type logical),    
+	#"Added Today_Flag" = Table.AddColumn(#"Added DateHour_Flag", "Today_Flag", each if [Date] = DateTime.Date(DateTime.LocalNow()) then true else false,type logical),
+	#"Added Week_Flag" = Table.AddColumn(#"Added Today_Flag", "Week_Flag", each if [Week] = Date.WeekOfYear(DateTime.LocalNow()) then true else false,type logical),
+	#"Added Month_Flag" = Table.AddColumn(#"Added Week_Flag", "Month_Flag", each if [Month Number] = Date.Month(DateTime.LocalNow()) then true else false,type logical),
+	#"Added Quarter_Flag" = Table.AddColumn(#"Added Month_Flag", "Quarter_Flag", each if [Quarter Number] = Date.QuarterOfYear(DateTime.LocalNow()) then true else false,type logical),
+	#"Added Year_Flag" = Table.AddColumn(#"Added Quarter_Flag", "Year_Flag", each if [Year] = Date.Year(DateTime.LocalNow()) then true else false ,type logical),  
+	#"Reordered Columns" = Table.ReorderColumns(#"Added Year_Flag",{"Index", "Date", "DateHour", "Datetime", "Year", "Short Year", "Quarter Number", "Quarter Year", "Month Number", "Month", "Month Name", "Week", "Day", "Day Name", "Hour", "Time", "Today_Flag"})
+
+in
+    #"Reordered Columns"
+in
+	Source

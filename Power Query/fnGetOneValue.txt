@@ -1,0 +1,12 @@
+let GetValue=(filepath, sheetname, row, header) => 
+    let
+       name = Excel.Workbook(File.Contents(filepath), null, true),
+       sheet = name{[Item=sheetname,Kind="Sheet"]}[Data],
+       select =  Table.SelectColumns(sheet,{header}),
+       value = select{row},
+       convert = Record.ToTable(value),
+       final = convert{0}[Value]
+in
+      final
+
+    in GetValue
