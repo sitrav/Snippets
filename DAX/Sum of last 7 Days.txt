@@ -1,0 +1,8 @@
+Sum Last 7 = calculate( 
+	[Sum],
+    FILTER (
+        ALL ( calendar[Date] ),
+        calendar[Date] >= (  calendar[Date] - 7 )
+            && calendar[Date] <  (calendar[Date])
+    )
+)

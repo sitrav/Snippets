@@ -1,0 +1,4 @@
+//example title using selection filters
+
+Title Filters = 
+if([Text Filtered]<>blank(),[Text Filtered] & " - ","") & [Title Date Range]
