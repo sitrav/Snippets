@@ -1,4 +1,5 @@
-Sum Last 7 = calculate( 
+Sum Last 7 Days = 
+calculate( 
 	[Sum],
     FILTER (
         ALL ( calendar[Date] ),
