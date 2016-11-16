@@ -1,0 +1,4 @@
+#create named range that is the same as the column title
+#orginally used in conditional formatting of gantt chart 
+
+INDIRECT("tblLog[@["&status_col&"]:["&status_col&"]]")

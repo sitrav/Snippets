@@ -1,0 +1,5 @@
+#used for gantt chart
+#week_offset = weeknumber calculated from the column number (aka if gantt starts @ col 10, then week 2 is col 11)
+#year = 2016 or whatever
+
+=DATE(year, 1, 1) - WEEKDAY(DATE(year, 1,1),2) + (COLUMN()-week_offset-1) * 7+1
