@@ -1,0 +1,16 @@
+#loads all CSV files in directory into single dataframe
+#requires all of the CSVs to be in the same format
+#note: if csv's have a header, then set Header = TRUE
+#note: will only load complete cases (no NA's)
+
+#directory is from working directory (ie: working dir= C:/working, directory = "csvdata" ...full string: C:/working/csvdata)
+
+#requires Dplyr
+library(dplyr)
+
+loadDirCSV <- function (directory) {
+        csvlist = list.files(directory,pattern="*.*(csv)$", full.names=TRUE)
+        H1 = bind_rows(lapply(csvlist, function(x) {read.csv(x, header = TRUE)}))
+        tbl <- H1[complete.cases(H1),]
+        tbl <- tbl_df(tbl)
+}
