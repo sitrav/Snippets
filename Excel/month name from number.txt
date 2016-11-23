@@ -1,0 +1,4 @@
+#returns MMM format from date
+#note for DAX: =format([DATE],"mmm") will return the same values
+
+=CHOOSE(MONTH(date),"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")

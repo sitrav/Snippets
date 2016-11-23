@@ -1,0 +1,23 @@
+#in this example there is a 1:Many list of components, 1:Many list of Parents, Many:Many Bill of Materials table (tblBOM), 1:Many transaction table (tblRaw)
+#this returns the sum of each component per parent
+#[Component Quantity] = sum(tblBOM[Qty Component])
+
+#part one: shows all components for all of the parts included in tblBOM
+=CALCULATE(
+	[Component Quantity],
+	tblBOM
+)
+
+#part two: Filters tblBOM to only return parts that have transactions against them
+#[Parent Transaction Quantity] =calculate( Sum( TblRaw[QTY SHIPPED] ), tblBOM)
+
+=CALCULATE(
+	[Component Quantity],
+	tblBOM,
+	filter(
+		tblBOM,
+		[Parent Transaction Quantity]
+	)
+)
+
+	
