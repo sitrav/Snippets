@@ -1,7 +1,7 @@
 #loads all CSV files in directory into single dataframe
 #requires all of the CSVs to be in the same format
 #note: if csv's have a header, then set Header = TRUE
-#note: will only load complete cases (no NA's)
+#note: will only load complete cases (no NA's)...remove complete.cases line if you want to keep NAs
 
 #directory is from working directory (ie: working dir= C:/working, directory = "csvdata" ...full string: C:/working/csvdata)
 
