@@ -1,8 +1,9 @@
 #used for gantt chart
+#each column represents a week. this will return the MONDAY date of that column
+
 #week_offset = weeknumber calculated from the column number (aka if gantt starts @ col 11, then week 2 is col 12)
 #Alpha Column of Gnatt chart Start	L <--input
 #calculate column for Gnatt weeks	11 <-- week_offset =COLUMN(INDIRECT(input&"1"))-1
-
 
 #year = 2016 or whatever or =YEAR( TODAY() )
 
