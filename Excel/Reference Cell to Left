@@ -1,0 +1,4 @@
+#can be adjusted for any consistant reference (1 cell left, 1 cell up, 1 up and 1 left, etc)
+
+
+=OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-1)
