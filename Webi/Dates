@@ -1,0 +1,8 @@
+FirstDayOfCurrentWeek 
+=RelativeDate(CurrentDate();-DayNumberOfWeek(CurrentDate()))
+
+LastDayOfLastWeek 
+=RelativeDate(CurrentDate();-DayNumberOfWeek(CurrentDate())-1)
+
+FirstDayOfLastWeek 
+=RelativeDate(CurrentDate();-DayNumberOfWeek(CurrentDate())-7)
