@@ -1,0 +1,3 @@
+covert Date SID to datetime
+
+Convert(datetime, [SID]) as Date
