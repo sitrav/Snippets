@@ -1,0 +1,29 @@
+[Normalized Sales] =
+
+  DIVIDE([Total Sales], [Sales on First Date in Range])
+  
+//Static First Date
+[Sales on First Date in Range] =
+
+  CALCULATE([Total Sales],
+            DATESBETWEEN(Calendar[Date], 
+                        [First Date in Range], 
+                        [First Date in Range]                        )
+           )
+
+[First Date in Range] =
+
+  CALCULATE(FIRSTNONBLANK(Calendar[Date], [Total Sales]),
+            ALL(Calendar[Date])
+           )
+
+
+//Dynamic First Selected Date
+CALCULATE(
+[Tota Sales],
+CALCULATETABLE(
+FIRSTDATE(‘Calendar'[Date])
+ALLSELECTED(‘Calendar’)
+)
+)
+
