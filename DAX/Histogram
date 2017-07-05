@@ -1,0 +1,16 @@
+variable sized buckets for histogram (from powerpivot pro)
+
+setup table 'Buckets' with:
+From/To/Title/Index
+
+Bucket:=CALCULATE (
+    COUNTROWS (
+        FILTER (
+            [ID],
+            AND (
+                [Value] >= MIN ( Buckets[From] ),
+                [Value] < MAX ( Buckets[To] )
+            )
+        )
+    ))+0
+    
