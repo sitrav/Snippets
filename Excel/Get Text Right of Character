@@ -1,0 +1,5 @@
+//returns text after the first instance of a particular character
+//i.e test@email.com returns email.com
+
+
+=MID(C4,FIND("@",C4&"@")+1,255)
