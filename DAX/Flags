@@ -1,0 +1,5 @@
+//Flag Math
+
+Flag:=If([Measure1]=[Measure2],1,blank()) //Returns a 1 for each row checked (PNR in the orginal example)
+
+Flag match Count:=calculate([Dimension Count],filter(TableOfUniqueDimension,[Flag]=1)) //Sums up flags based on dimension (dimension count is based on table of unqiue values (PNRs))
