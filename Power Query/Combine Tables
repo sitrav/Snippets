@@ -1,0 +1,7 @@
+
+Table.SelectColumns(TableName,{"Column"})   // selects one column from table
+
+Table.Distinct(#"Table") //unique values
+
+
+Table.Distinct( Table.SelectColumns(TableName,{"Column"}) ) //distinct single column
