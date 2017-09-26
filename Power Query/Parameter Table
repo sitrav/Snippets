@@ -5,6 +5,12 @@
 //2) parameter="File Path" Value= =LEFT(CELL("filename",B6),FIND("[",CELL("filename",B6),1)-1)
 //3) create fn below
 //4) invoke fn for a table and use the text from the parameter column
+//4.5) or to target a directory
+let
+SolutionPath = fnGetParameter("File Path"),
+    Source = Folder.Files(SolutionPath & "Data"),
+
+
 
 //fnGetParameter
 (ParameterName as text) =>
