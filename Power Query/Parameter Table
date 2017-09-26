@@ -1,0 +1,19 @@
+//https://www.excelguru.ca/blog/2014/11/26/building-a-parameter-table-for-power-query/
+
+//use to get current file directory
+//1) create table called parameters
+//2) parameter="File Path" Value= =LEFT(CELL("filename",B6),FIND("[",CELL("filename",B6),1)-1)
+//3) create fn below
+//4) invoke fn for a table and use the text from the parameter column
+
+//fnGetParameter
+(ParameterName as text) =>
+let
+ParamSource = Excel.CurrentWorkbook(){[Name="Parameters"]}[Content],
+ParamRow = Table.SelectRows(ParamSource, each ([Parameter] = ParameterName)),
+Value=
+if Table.IsEmpty(ParamRow)=true
+then null
+else Record.Field(ParamRow{0},"Value")
+in
+Value
