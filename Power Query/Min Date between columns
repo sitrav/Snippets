@@ -1,0 +1,1 @@
+= List.Min ( List.RemoveNulls ( { [Date1], [Date2] } ) )
