@@ -1,3 +1,6 @@
+
+//Original
+
 let
     Source = Folder.Files("C:\Projects\Database\Project Files\(PUF) Passanger Utilization Fee 170519\Accounting data"),
     #"Filtered Rows3" = Table.SelectRows(Source, each ([Extension] = ".csv")),
@@ -19,3 +22,32 @@ else
     #"Almost there" = Table.AddColumn(#"Removed Columns", "Custom.1", each Table.RowCount([Custom])),
     MyList = Table.ToList(Table.RemoveColumns(Table.Distinct(Table.ExpandListColumn(Table.AddColumn(#"Almost there", "ColumnHeaders", each Table.ColumnNames([Custom])), "ColumnHeaders"),{"ColumnHeaders"}),{"Name", "Extension", "Custom.Name", "Custom.Item", "Custom.Kind", "Custom", "Custom.1"})),
     #"Here we go" = Table.RenameColumns(#"Almost there",{{"Custom.1", "Total Rows"},{"Custom.Kind", "Kind"}, {"Custom.Item", "Item Name"}, {"Custom.Name", "Sheet Name"}, {"Name", "File Name"}}),
+in
+#"Here we go"
+
+//Using Parameter table to target current file location
+
+let
+    SolutionPath = fnGetParameter("File Path"),
+    Source = Folder.Files(SolutionPath & "Data"),
+    #"Filtered Rows3" = Table.SelectRows(Source, each ([Extension] = ".csv")),
+    #"Filtered Rows1" = Table.SelectRows(#"Filtered Rows3", each not Text.StartsWith([Name], "~")),
+    #"Filtered Rows" = Table.SelectRows(#"Filtered Rows1", each [Name] <> "~"),
+    #"Get the files" = Table.SelectRows(#"Filtered Rows", each [Extension] = ".csv" or [Extension] = ".txt" or Text.StartsWith([Extension], ".xls")),
+    #"Removed Other Columns" = Table.SelectColumns(#"Get the files",{"Content", "Name", "Extension"}),
+    Trans1 = Table.AddColumn(#"Removed Other Columns", "Custom", each if Text.StartsWith([Extension], ".xls") then Excel.Workbook( [Content]) else null),
+    Trans2 = Table.ExpandTableColumn(Trans1, "Custom", {"Name", "Data", "Item", "Kind"}, {"Custom.Name", "Custom.Data", "Custom.Item", "Custom.Kind"}),
+    #"The Formula" = Table.AddColumn(Trans2, "Custom", each if [Extension] = ".csv" then 
+     Table.PromoteHeaders(Csv.Document([Content])) 
+       else if [Extension] = ".txt" 
+          then Table.PromoteHeaders(Csv.Document([Content],null,"," ))
+              else if [Custom.Kind] <> "Table" 
+                  then Table.PromoteHeaders([Custom.Data]) 
+else
+[Custom.Data]),
+    #"Removed Columns" = Table.RemoveColumns(#"The Formula",{"Content", "Custom.Data"}),
+    #"Almost there" = Table.AddColumn(#"Removed Columns", "Custom.1", each Table.RowCount([Custom])),
+    MyList = Table.ToList(Table.RemoveColumns(Table.Distinct(Table.ExpandListColumn(Table.AddColumn(#"Almost there", "ColumnHeaders", each Table.ColumnNames([Custom])), "ColumnHeaders"),{"ColumnHeaders"}),{"Name", "Extension", "Custom.Name", "Custom.Item", "Custom.Kind", "Custom", "Custom.1"})),
+    #"Here we go" = Table.RenameColumns(#"Almost there",{{"Custom.1", "Total Rows"},{"Custom.Kind", "Kind"}, {"Custom.Item", "Item Name"}, {"Custom.Name", "Sheet Name"}, {"Name", "File Name"}}),
+in
+#"Here we go"
