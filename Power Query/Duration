@@ -1,0 +1,15 @@
+//http://www.powerpivot-info.com/post/143-q-how-can-i-calculate-difference-between-two-dates-in-dax-seconds-minutes-hours-days-and-months
+
+Calculation Description	Calculated column name	DAX Formula
+
+Serial date-time value for field Date1:	      Date1-serial	  = 1 * [Date1]
+
+Duration in days between Date2 and Date1:	    Duration-Days	  = 1 * ([Date2]-[Date1])
+
+Duration in hours between Date2 and Date1:	  Duration-Hours	= 24 * ([Date2]-[Date1])
+
+Duration in minutes between Date2 and Date1:	Duration-Min	  = 24 * 60 * ([Date2]-[Date1])
+
+Duration in seconds between Date2 and Date1:	Duration-Sec	  = ROUND(24 * 60 * 60 * ([Date2]-[Date1]), 1)
+
+
