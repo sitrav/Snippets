@@ -25,10 +25,10 @@ else
 in
 #"Here we go"
 
-//Using Parameter table to target current file location
+//Using Parameter table to target current file location (Parameter Table)
 
 let
-    SolutionPath = fnGetParameter("File Path"),
+    SolutionPath = fnGetParameter("Parent Dir"),
     Source = Folder.Files(SolutionPath & "Data"),
     #"Filtered Rows3" = Table.SelectRows(Source, each ([Extension] = ".csv")),
     #"Filtered Rows1" = Table.SelectRows(#"Filtered Rows3", each not Text.StartsWith([Name], "~")),
@@ -48,6 +48,6 @@ else
     #"Removed Columns" = Table.RemoveColumns(#"The Formula",{"Content", "Custom.Data"}),
     #"Almost there" = Table.AddColumn(#"Removed Columns", "Custom.1", each Table.RowCount([Custom])),
     MyList = Table.ToList(Table.RemoveColumns(Table.Distinct(Table.ExpandListColumn(Table.AddColumn(#"Almost there", "ColumnHeaders", each Table.ColumnNames([Custom])), "ColumnHeaders"),{"ColumnHeaders"}),{"Name", "Extension", "Custom.Name", "Custom.Item", "Custom.Kind", "Custom", "Custom.1"})),
-    #"Here we go" = Table.RenameColumns(#"Almost there",{{"Custom.1", "Total Rows"},{"Custom.Kind", "Kind"}, {"Custom.Item", "Item Name"}, {"Custom.Name", "Sheet Name"}, {"Name", "File Name"}}),
+    #"Here we go" = Table.RenameColumns(#"Almost there",{{"Custom.1", "Total Rows"},{"Custom.Kind", "Kind"}, {"Custom.Item", "Item Name"}, {"Custom.Name", "Sheet Name"}, {"Name", "File Name"}})
 in
 #"Here we go"
