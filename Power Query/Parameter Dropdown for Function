@@ -1,0 +1,40 @@
+let
+
+//Get Parameter List
+GetParameterList =
+    let
+        Source = Excel.CurrentWorkbook(){[Name="Parameters"]}[Content],
+        #"Changed Type" = Table.TransformColumnTypes(Source,{{"Parameter", type text}, {"Value", type any}}),
+        #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Value"}),
+        #"Removed Duplicates" = Table.Distinct(#"Removed Columns")
+    in
+        #"Removed Duplicates",
+
+//Create Function to Filter List
+BaseFunction = (
+    optional ParameterFilter as text 
+       ) =>
+
+let 
+                       ParameterFilter = if ParameterFilter = null 
+                         then GetParameterList
+                         else Table.SelectRows(GetParameterList, each ([Parameter] = ParameterFilter))
+
+in ParameterFilter,
+
+//Set AllowedValues on Parameter 
+AddAllowedValues = 
+let
+    AvailableParameters = Table.Column(GetParameterList, "Parameter"),
+    ParameterType = type nullable text
+                    meta [Documentation.AllowedValues = AvailableParameters],
+
+    NewFunctionType = type function (
+                        optional ParameterFilter as ParameterType)
+                        as table,
+
+    CastToType = Value.ReplaceType(BaseFunction, NewFunctionType)
+in
+    CastToType
+in 
+    AddAllowedValues
