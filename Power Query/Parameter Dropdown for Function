@@ -1,3 +1,5 @@
+//from https://blog.crossjoin.co.uk/2014/12/02/specifying-allowed-values-sample-values-and-descriptions-for-function-parameters-in-power-querypart-2/
+
 let
 
 //Get Parameter List
