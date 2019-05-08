@@ -1,8 +1,21 @@
 let
-    Source = (optional startDate as nullable date, optional endDate as nullable date, optional CalendarType as nullable text, optional addDaysBeforeToday as nullable number, optional addDaysPastToday as nullable number) =>
+    Source = (optional startDate as nullable datetime, optional endDate as nullable datetime, optional CalendarType as nullable text, optional addDaysBeforeToday as nullable number, optional addDaysPastToday as nullable number) =>
     //options for CalendarType = "Date" or "DateHour" or "Datetime"  //null dates default to today
     //AddDays allow for dynamic range if you choose to base the calendar off of today (null values in startDate and endDate)
+    
 let
+
+Day.DayLastYear = (day) =>
+        let
+            Previous = Date.AddYears(day, -1),
+            DayOfWeek = Date.DayOfWeek(day),
+            PreviousDayOfWeek = Date.DayOfWeek(Previous),
+            Difference = PreviousDayOfWeek - DayOfWeek,
+            Adjusted1 = if Difference < -3 then Difference + 7 else Difference,
+            Adjusted2 = if Adjusted1 > 3 then Adjusted1 - 7 else Adjusted1,
+            Result = Date.AddDays(Previous, Adjusted2)
+        in
+            Result,
 
 addDaysBefore = if addDaysBeforeToday = null then 0 else addDaysBeforeToday,
 startDateNotNull = if startDate = null then #date(Date.Year(DateTime.FixedLocalNow()),Date.Month(DateTime.FixedLocalNow()),Date.Day(DateTime.FixedLocalNow())) else startDate,
@@ -60,8 +73,9 @@ Source = List.DateTimes,
 	#"Added Week_Flag" = Table.AddColumn(#"Added Today_Flag", "Week_Flag", each if [Week] = Date.WeekOfYear(DateTime.LocalNow()) then true else false,type logical),
 	#"Added Month_Flag" = Table.AddColumn(#"Added Week_Flag", "Month_Flag", each if [Month Number] = Date.Month(DateTime.LocalNow()) then true else false,type logical),
 	#"Added Quarter_Flag" = Table.AddColumn(#"Added Month_Flag", "Quarter_Flag", each if [Quarter Number] = Date.QuarterOfYear(DateTime.LocalNow()) then true else false,type logical),
-	#"Added Year_Flag" = Table.AddColumn(#"Added Quarter_Flag", "Year_Flag", each if [Year] = Date.Year(DateTime.LocalNow()) then true else false ,type logical),  
-	#"Reordered Columns" = Table.ReorderColumns(#"Added Year_Flag",{"Index", "Date", "DateHour", "Datetime", "Year", "Short Year", "Quarter Number", "Quarter Year", "Month Number", "Month", "Month Name", "Week", "Day", "Day Name", "Hour", "Time", "Today_Flag"})
+	#"Added Year_Flag" = Table.AddColumn(#"Added Quarter_Flag", "Year_Flag", each if [Year] = Date.Year(DateTime.LocalNow()) then true else false ,type logical),
+	#"Added SDLY Date" = Table.AddColumn(#"Added Year_Flag", "SDLY Date", each Day.DayLastYear([Date]), type date),
+	#"Reordered Columns" = Table.ReorderColumns(#"Added SDLY Date",{"Index", "Date", "DateHour", "Datetime", "Year", "Short Year", "Quarter Number", "Quarter Year", "Month Number", "Month", "Month Name", "Week", "Day", "Day Name", "Hour", "Time", "Today_Flag"})
 
 in
     #"Reordered Columns"
