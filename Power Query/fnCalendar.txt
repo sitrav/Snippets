@@ -5,9 +5,10 @@ let
     
 let
 
-Day.DayLastYear = (day) =>
-        let
-            Previous = Date.AddYears(day, -1),
+    Day.DayLastYear = (day) =>
+        let 
+            PreviousDate = Date.AddYears(day, -1),
+   Previous = Date.AddDays(PreviousDate, 1),
             DayOfWeek = Date.DayOfWeek(day),
             PreviousDayOfWeek = Date.DayOfWeek(Previous),
             Difference = PreviousDayOfWeek - DayOfWeek,
@@ -16,6 +17,7 @@ Day.DayLastYear = (day) =>
             Result = Date.AddDays(Previous, Adjusted2)
         in
             Result,
+	    
 
 addDaysBefore = if addDaysBeforeToday = null then 0 else addDaysBeforeToday,
 startDateNotNull = if startDate = null then #date(Date.Year(DateTime.FixedLocalNow()),Date.Month(DateTime.FixedLocalNow()),Date.Day(DateTime.FixedLocalNow())) else startDate,
