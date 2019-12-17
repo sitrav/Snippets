@@ -4,7 +4,6 @@ let
     //AddDays allow for dynamic range if you choose to base the calendar off of today (null values in startDate and endDate)
     
 let
-
     Day.DayLastYear = (day) =>
         let 
             PreviousDate = Date.AddYears(day, -1),
@@ -17,7 +16,6 @@ let
             Result = Date.AddDays(Previous, Adjusted2)
         in
             Result,
-	    
 
 addDaysBefore = if addDaysBeforeToday = null then 0 else addDaysBeforeToday,
 startDateNotNull = if startDate = null then #date(Date.Year(DateTime.FixedLocalNow()),Date.Month(DateTime.FixedLocalNow()),Date.Day(DateTime.FixedLocalNow())) else startDate,
@@ -77,9 +75,27 @@ Source = List.DateTimes,
 	#"Added Quarter_Flag" = Table.AddColumn(#"Added Month_Flag", "Quarter_Flag", each if [Quarter Number] = Date.QuarterOfYear(DateTime.LocalNow()) then true else false,type logical),
 	#"Added Year_Flag" = Table.AddColumn(#"Added Quarter_Flag", "Year_Flag", each if [Year] = Date.Year(DateTime.LocalNow()) then true else false ,type logical),
 	#"Added SDLY Date" = Table.AddColumn(#"Added Year_Flag", "SDLY Date", each Day.DayLastYear([Date]), type date),
-	#"Reordered Columns" = Table.ReorderColumns(#"Added SDLY Date",{"Index", "Date", "DateHour", "Datetime", "Year", "Short Year", "Quarter Number", "Quarter Year", "Month Number", "Month", "Month Name", "Week", "Day", "Day Name", "Hour", "Time", "Today_Flag"})
-
+	#"Reordered Columns" = Table.ReorderColumns(#"Added SDLY Date",{"Index", "Date", "DateHour", "Datetime", "Year", "Short Year", "Quarter Number", "Quarter Year", "Month Number", "Month", "Month Name", "Week", "Day", "Day Name", "Hour", "Time", "Today_Flag"}),
+	#"Added SDHLY" = Table.AddColumn(#"Reordered Columns", "SDHLY", each if CalendarType = "Date" then null else #datetime(Date.Year([SDLY Date]),Date.Month([SDLY Date]),Date.Day([SDLY Date]),[Hour],0,0), type datetime),
+	#"Inserted Day of Week" = Table.AddColumn(#"Added SDHLY", "Day of Week", each Date.DayOfWeek([Date]), Int64.Type),
+    #"Added DOW" = Table.AddColumn(#"Inserted Day of Week", "DOWHourKey", each Text.PadStart(Number.ToText([Day of Week]),2,"0")& Text.PadStart(Number.ToText([Hour]),2,"0")),
+    #"Added DOW_Flag" = Table.AddColumn(#"Added DOW", "DOW_Flag", each if [Day of Week] = Date.DayOfWeek(DateTime.Date(DateTime.LocalNow())) then true else false,type logical),   
+    #"Inserted Start of Month" = Table.AddColumn(#"Added DOW_Flag", "Start of Month", each Date.StartOfMonth([Date]), type date),
+    #"Inserted Start of Week" = Table.AddColumn(#"Inserted Start of Month", "Start of Week", each Date.StartOfWeek([Date]), type date),
+    #"Added current_day" = Table.AddColumn(#"Inserted Start of Week", "current_day", each if [Today_Flag] = true then [Date] else null),
+    #"Added current_month" = Table.AddColumn(#"Added current_day", "current_month", each if [Month_Flag] = true then [Start of Month] else null),
+    #"Added current_week" = Table.AddColumn(#"Added current_month", "current_week", each if [Week_Flag] = true then [Start of Week] else null),
+    #"Added curent_year" = Table.AddColumn(#"Added current_week", "current_year", each if [Year_Flag] = true then [Year] else null),
+    #"Added current_datehour" = Table.AddColumn(#"Added curent_year", "current_datehour", each if [DateHour_Flag] = true then [DateHour] else null, type datetime),
+    #"Filled Up" = Table.FillUp(#"Added current_datehour",{"current_datehour", "current_day","current_week","current_month","current_year" }),
+    #"Filled Down" = Table.FillDown(#"Filled Up",{"current_datehour", "current_day","current_week","current_month", "current_year" }),
+    #"Added Month Offset" = Table.AddColumn(#"Filled Down", "Month Offset", each ([Year] - [current_year]) * 12 + [Month Number] - Date.Month([current_month])),
+    #"Added Date Offset" = Table.AddColumn(#"Added Month Offset", "Date Offset", each [Date] - [current_day]),
+    #"Added Week Offset" = Table.AddColumn(#"Added Date Offset", "Week Offset", each ([Start of Week] - [current_week]) / 7),
+    #"Added Hours Back" = Table.AddColumn(#"Added Week Offset", "Hour Offset", each 24*([DateHour] - [current_datehour]), Int64.Type),
+    #"Changed Type Offsets" = Table.TransformColumnTypes(#"Added Hours Back",{{"Hour Offset", Int64.Type}, {"Date Offset", Int64.Type}, {"Week Offset", Int64.Type}, {"Month Offset", Int64.Type}}),
+    #"Removed helper columns" = Table.RemoveColumns(#"Changed Type Offsets",{"current_datehour", "Start of Month", "Start of Week", "current_day", "current_month", "current_week", "current_year"})
 in
-    #"Reordered Columns"
+    #"Removed helper columns"
 in
 	Source
